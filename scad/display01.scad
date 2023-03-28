@@ -57,19 +57,7 @@ module main_body(){
         }
     }
 }
-module disp_screw_bollards(){
-    BOLLARD_RD = 6/2;
-    SCREWHOLE_RD = 2/2;
 
-    difference() {
-        cylinder(h = 8.5, r = BOLLARD_RD);
-        translate([0, 0, 1]){
-            cylinder(h = 8, r = SCREWHOLE_RD);
-        }
-    }
-    
-
-}
 
 
 module display_position() {
@@ -155,6 +143,46 @@ module brass_bush_holes(rad){
     }
 }
 
+module disp_screw_bollard(){
+    BOLLARD_RD = 6/2;
+    SCREWHOLE_RD = 2.5/2;
+
+    difference() {
+        cylinder(h = 8.5, r = BOLLARD_RD);
+        translate([0, 0, 1]){
+            cylinder(h = 8, r = SCREWHOLE_RD);
+        }
+    }
+    
+
+}
+
+TOP_OS = 4.0;
+BOT_OS = 1;
+X_OS = -2.5;
+Y_OS = -2.5;
+
+DISPLAY_PCB_LN = 80;
+DISPLAY_PCB_WD = 36;
+
+bollard_posis = [
+    // Tp 
+    [-(DISPLAY_PCB_LN/2 + X_OS),  (DISPLAY_PCB_WD/2 + Y_OS )],
+    [ (DISPLAY_PCB_LN/2 + X_OS),  (DISPLAY_PCB_WD/2 + Y_OS )],
+    // bottom
+    [ (DISPLAY_PCB_LN/2 + X_OS), -(DISPLAY_PCB_WD/2 + Y_OS )],
+    [-(DISPLAY_PCB_LN/2 + X_OS), -(DISPLAY_PCB_WD/2 + Y_OS )]
+];
+
+module disp_screw_bollards(){
+    for(bp=bollard_posis){
+        translate([bp[0], bp[1], 1]){
+            rotate([0, 0, 0]){
+                disp_screw_bollard();
+            }
+        }
+    }
+}
 
 module display_box(){
     difference(){
@@ -166,8 +194,8 @@ module display_box(){
                     
                         main_body();
                     
-                        translate([-1, 0, 1]){   
-                            scale([0.96,0.96,0.95]){
+                        translate([-2, 0, 2.5]){   
+                            scale([0.96,0.96,0.90]){
                                 main_body();
                             }
                         }
@@ -239,35 +267,12 @@ module display_box(){
                 
             }
                         
-                
             
-            
-
-
-            TOP_OS = 4.0;
-            BOT_OS = 1;
-            X_OS = 2.5;
-            Y_OS = 1.5;
-        
-            bollard_posis = [
-                // Tp 
-                [-(SCREEN_WD/2 + X_OS),  (SCREEN_HT/2 + Y_OS + TOP_OS)],
-                [ (SCREEN_WD/2 + X_OS),  (SCREEN_HT/2 + Y_OS + TOP_OS)],
-                // bottom
-                [ (SCREEN_WD/2 + X_OS), -(SCREEN_HT/2 + Y_OS + BOT_OS)],
-                [-(SCREEN_WD/2 + X_OS), -(SCREEN_HT/2 + Y_OS + BOT_OS)]
-            ];
             display_position(){
                 rotate([0, -90, 0]){
                     rotate([0, 0, -90]){
-                        translate([-0.5, -0.5, 0]){
-                            for(bp=bollard_posis){
-                                translate([bp[0], bp[1], 0]){
-                                    rotate([0, 0, 0]){
-                                        disp_screw_bollards();
-                                    }
-                                }
-                            }
+                        translate([0, 0.5, 0]){
+                            disp_screw_bollards();
                         }
                         
                     }
@@ -299,7 +304,18 @@ module display_box(){
 
 
 
-// display_box();
+//intersection(){
+//    display_box();
+//     #translate([26, 5, 28]){
+//         rotate([0, -30, 0]){
+//             cube([20, DISPLAY_PCB_LN + 5, DISPLAY_PCB_WD + 4], center=true);
+//         }
+//     }
+// }
+
+
+
+
 
 // //#####################################################
 // // UNPRINTABLE BELOW

@@ -15,7 +15,6 @@ SIDE_HT= 40;
 SIDE_ANG = 40;
 FACE_WD=90;
 BASE_RING_HT = 12;
-CELL_PLATE_RD = 103/2;
 
 top_base_rd = PLATE_RD * 1.2;
 bot_base_rd = top_base_rd +20;
@@ -59,45 +58,29 @@ mount_cup_pts = [
     [0, MOUNT_CUP_TN,0]
 ];
 
-
-mount_ring_inner_rd = CELL_PLATE_RD * 1.03 -2;
-mount_ring_outer_rd = mount_ring_inner_rd + 4;
 module mount_cup(){
-
-    rotate_extrude(angle=360) {
-        polygon(polyRound(mount_cup_pts,60));
+    difference(){
+        rotate_extrude(angle=360) {
+            polygon(polyRound(mount_cup_pts,60));
+        }
+        cylinder(h = 10, r = 4/2);
+        translate([0, 0, -0.5]){
+            cylinder(h = 3.5, r1 = 9/2, r2 = 3.5/2);
+        }
     }
 
-    // mounting ring
-    translate([0, 5, MOUNT_CUP_TN * 0.99]){
-        difference(){
-            cylinder(h = 14, r = mount_ring_outer_rd);
-            cylinder(h = 15, r = mount_ring_inner_rd);
-            translate([0, -mount_ring_inner_rd, MOUNT_CUP_TN + 6]){
-                cube([14, 10, 14], center=true);
-            }
-        }
-        difference(){
-            cylinder(h = 3, r = mount_ring_inner_rd);
-            cylinder(h = 4, r = mount_ring_inner_rd-6);
-            
-        }
 
-    }
+    // for (spike_ang = [0,120,240]){
+    //     rotate([0,0,spike_ang]){
+    //         translate([30,0,0]){
+    //             cylinder(h=10,r1=5,r2=3);
+    //         } 
+    //     } 
+    // }
     
 
 }
-intersection() {
-    !mount_cup();
-    translate([0, 5, 0]){
-        difference(){
-            cylinder(h = 20, r = mount_ring_outer_rd-2);
-            #translate([0, 0, -0.1]){
-                cylinder(h = 11, r = mount_ring_inner_rd-4);
-            }
-        }
-    }
-}
+
 
 
 //####################################################################
@@ -209,51 +192,6 @@ module bottom_base_cup(){
 }
 
 
-// // difference(){
-//     bottom_base_cup();
-// //     translate([0, -100, -40]){
-// //         cube([200,100 ,40 ], center=true);
-// //     }
-// // }
-
-// translate([-36, -27, -38]){
-//     rotate([0, -90, -90]){
-//         battery_strap();
-//     }
-// }
-
-
-
-// intersection(){
-    
-//     #translate([-35, 25, -45]){
-//         cube([50, 5, 20], center=true);
-//     }
-// }
-    
-
-
-
-// // Main PCB model !!! NOT PRINTED !!!
-// translate([25, 0, -37]){
-//     rotate([0, 0, 90]){
-//         main_PCB();
-//     }
-// }
-
-// // Battery Pack model !!! NOT PRINTED !!!
-// translate([-30, 50, -35.2]){
-//     rotate([90, 90, 0]){
-//         #battery_pack();
-//     }
-// }
-// // measuring plug clearance
-// // translate([-30, -58, -35]){
-// //     cube([5, 35, 5], center=true);
-// // }
-
-
-
 
 module screw_bollard(){
     shape_pts = [
@@ -335,34 +273,11 @@ module top_base_ring(){
                         }
                     }
                 }
-                // screwhole bollards for plate holding
-                rotate([0, 0, 60]){
-                    translate([top_base_rd -7 , 0, 0]){
-                        cylinder(h = BASE_RING_HT, r = 8/2);
-                    }
-                }
-                rotate([0, 0, -60]){
-                    translate([top_base_rd -7 , 0, 0]){
-                        cylinder(h = BASE_RING_HT, r = 8/2);
-                    }
-                }
             }
             // Cradle for the load cell plate
             translate([17.5, 0, BASE_RING_HT - 4]){
                 cylinder(h = BASE_RING_HT, r = CELL_PLATE_RD);
             }
-            // screwholes for plate holding
-            rotate([0, 0, 60]){
-                translate([top_base_rd -7 , 0, 3]){
-                    cylinder(h = BASE_RING_HT, r = 2.5/2);
-                }
-            }
-            rotate([0, 0, -60]){
-                translate([top_base_rd -7 , 0, 3]){
-                    cylinder(h = BASE_RING_HT, r = 2.5/2);
-                }
-            }
-
 
         }
 
@@ -464,54 +379,91 @@ module charger_socket_holder(){
 // }
 
 
+// provide a thickening of the cone wall for strength
+module reinforcement_ring(){
+    HT_DISP = -35;
+    RING_HT = 15;
+    difference(){
+        intersection() {
+            // we start by reproducing the main_cone
+            main_cone();
+            // then we only want a slice of that cone
+    
+            translate([0, 0, HT_DISP]){
+                cylinder(h = RING_HT , r = bot_base_rd);
+            }
+    
+        }
+        // now we chop out a cone ensuring that the lower face is 45 deg
+        translate([0, 0, HT_DISP -0.1]){
+            cylinder(h = bot_base_rd, r1 = bot_base_rd, r2 = 0.01);
+        }
+
+    }
+
+}
+
+
+
+
 //########################################################################
 // Main bottom body
 module main_bottom_body(){
     difference(){
         union(){
-            difference() {
+            difference(){
                 union(){
-                    main_cone();
-                    
-                    // base ring
-                    translate([0,0,-48]){
-                        cylinder(h=10, r=bot_base_rd);
+                    difference() {
+                        union(){
+                            main_cone();
+                            
+                            // base ring
+                            translate([0,0,-48]){
+                                cylinder(h=10, r=bot_base_rd);
+                            }
+        
+                            // translate([80, 0, -48]){
+                            //     display_box();
+                            // }   
+                        }
+                        // #scale([0.97,0.97,1.05]){
+                        //     main_cone();
+                        // }
+                        // negative main cone
+                        translate([0,0,-39]){
+                            cylinder(h = 42, r2 = top_base_rd -4, r1 = bot_base_rd -1.5);
+                        }
+        
+                        // // get rid of the gunge below the cone
+                        // #translate([0,PLATE_RD * 1.23-10,-40]){
+                        //     cube([FACE_WD * 1, 10, 18],center=true);
+                        // }
+        
+                        // negative base ring
+                        translate([0,0,-48]){
+                            translate([0,0,-1]){ 
+                                cylinder(h=12, r=bot_base_rd-3);
+                            }
+                        }
+                        
+        
+                        // chop out mount for top
+                        translate([0,0,-6]){
+                            scale([1.01,1.01,1]){
+                                translate([0,0,5]){
+                                    cylinder(r = top_base_rd, h = BASE_RING_HT);
+                                }
+                            }
+                        }
                     }
-
-                    // translate([80, 0, -48]){
-                    //     display_box();
-                    // }   
-                }
-                // #scale([0.97,0.97,1.05]){
-                //     main_cone();
-                // }
-                // negative main cone
-                translate([0,0,-39]){
-                    cylinder(h = 42, r2 = top_base_rd -4, r1 = bot_base_rd -1.5);
-                }
-
-                // // get rid of the gunge below the cone
-                // #translate([0,PLATE_RD * 1.23-10,-40]){
-                //     cube([FACE_WD * 1, 10, 18],center=true);
-                // }
-
-                // negative base ring
-                translate([0,0,-48]){
-                    translate([0,0,-1]){ 
-                        cylinder(h=12, r=bot_base_rd-3);
-                    }
+                    reinforcement_ring();
                 }
                 // CHARGER SOCKET HOLE
                 translate([-80, 0, -25]){
                     rotate([0, -60, 0]){
                         charger_hole();
-                    }
-                }
-
-                translate([0,0,-6]){
-                    scale([1.01,1.01,1]){
-                        translate([0,0,5]){
-                            cylinder(r = top_base_rd, h = BASE_RING_HT);
+                        translate([2, -1.6, -2.2]){
+                            cube([15,6 ,10 ], center=true);
                         }
                     }
                 }
@@ -522,7 +474,7 @@ module main_bottom_body(){
                 charger_socket_holder();
             }
 
-
+            
             
             // bollards
             for (this_ang = bollard_angles){
@@ -572,126 +524,9 @@ module main_bottom_body(){
 
     }
 }
-// difference() {
-//     union(){
-         //main_bottom_body();
-//         translate([0, 0, -6]){
-//             top_base_ring();
-//         }
-//     }
-    // translate([-78, 12, -20]){
-    //     rotate([0, 0, 0]){
-    //         cube([200, 100, 80 ], center=true);
-    //     }
-    // }
-// }
 
-//top_base_ring();
+main_bottom_body();
 
     
 
 //###############################################################################
-
-
-
-// translate([0,PLATE_RD * 1.38,-20]){
-//     rotate([118,0,0]){
-//         display_screw_bollards();
-//     }
-// }
-
-
-// // DISPLAY MODEL !!! NOT PRINTED !!!
-// translate([-0.4,73,-24.8]){ 
-//     rotate([62,0,180]){
-//         display_model_1602();
-//     }
-// }
-
-
-
-// the stuff on top
-union(){
-    // color("red",0.2){
-         // top_base_ring();
-    // }
-
-    translate([19, 0, 25]){
-        rotate([0, 0, 180]){
-            //load_cell_assy();
-        }
-    }
-
-    // mount plate
-    color("white",1.0){
-        
-    translate([0,0,39]){
-        rotate([0,180,0]){
-            intersection(){
-                //mount_cup();
-                //cube([50,25 ,50 ], center=true);
-            }
-        }
-    }
-    
-
-    }
-
-    // // measurements for centering
-    // translate([-60, 0, 36]){
-    //     cube([35.5/2, 5 , 2], center=true);
-    // }
-    // translate([60, 0, 36]){
-    //     cube([35.5/2, 5, 2], center=true);
-    // }
-}
-
-
-PLATEHOLDER_HT = 5;
-PLATEHR_TN = 2.5;
-
-platehdr_otr_rd = PLATE_RD + 10;
-
-
-// // plate holder
-// translate([0, 0, 80]){
-//     difference() {
-//         // main positive block
-//         cylinder(h = PLATEHOLDER_HT, r = platehdr_otr_rd);
-//         // create outer phlange
-//         translate([0, 0, PLATEHR_TN]){
-//             difference() {
-//                 cylinder(h = PLATEHOLDER_HT , r = platehdr_otr_rd+1);
-//                 translate([0, 0, -1]){
-//                     cylinder(h = PLATEHOLDER_HT * 1.4, r = PLATE_RD + PLATEHR_TN );
-//                 }
-        
-//             }
-//         }
-//         // create upper lip
-//         translate([0, 0, -(PLATEHOLDER_HT-(AL_PLATE_TN+0.5))]){
-//             cylinder(h = PLATEHOLDER_HT, r = PLATE_RD+1);
-//         }
-//         // remove centre
-//         translate([0, 0, 1]){
-//             cylinder(h = PLATEHOLDER_HT, r = PLATE_RD - 8);
-//         }
-
-//         // only want a small bit of the round
-//         translate([-100, -30, -1]){
-//             cube([200, 200, 10], center=false);
-//         }
-//     }
-    
-    
-    
-// }
-
-
-
-
-
-
-
-
-
